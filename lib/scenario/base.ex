@@ -1,5 +1,5 @@
 defmodule Shaker.Result do
-  defstruct pid: 0, response_time: 0, status: 0, case_result: "", name: ""
+  defstruct pid: 0, response_time: 0, status: 0, case_result: "", name: "", host: ""
 end
 
 defmodule Shaker.Scenario do
@@ -10,6 +10,10 @@ defmodule Shaker.Scenario do
         __MODULE__
       end
 
+      def host() do
+        Node.self
+      end
+
       def run() do
         start_timestamp = :os.system_time(:millisecond)
         result = case()
@@ -17,6 +21,7 @@ defmodule Shaker.Scenario do
 
         %Shaker.Result{
           name: name(),
+          host: host(),
           pid: System.get_pid,
           response_time: end_timestamp - start_timestamp,
           case_result: result

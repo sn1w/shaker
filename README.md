@@ -2,20 +2,23 @@
 
 A Load Testing Tool That Optimized for Distribution Environments.
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `shaker` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:shaker, "~> 0.1.0"}
-  ]
-end
+## Build
+```shell
+$ mix deps.get
+$ mix escript
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/shaker](https://hexdocs.pm/shaker).
+# Usage
+Standalone mode
+```shell
+$ shaker -s "scenarios/*" -p 1 -l 1
+```
 
+Distributed mode
+```shell
+# slave
+$ shaker --slave --node 'something@xxx.yyy.zzz'
+
+# master
+$ shaker -s "scenarios/*" -p 1 -l 1 -h "something@xxx.yyy.zzz"
+```
