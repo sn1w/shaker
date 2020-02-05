@@ -6,7 +6,6 @@ defmodule SampleHttpRequestScenario do
     {:ok, conn, request_ref} = Mint.HTTP.request(conn, "GET", "/", [], "")
     receive do message ->
       {:ok, conn, responses} = Mint.HTTP.stream(conn, message)
-      IO.inspect responses
     end    
   end
 end

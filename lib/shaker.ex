@@ -7,14 +7,16 @@ defmodule Shaker do
         verbose: :boolean,
         hosts: :string,
         scenarios: :string,
-        loop: :integer
+        loop: :integer,
+        timeout: :integer
       ],
       aliases: [
         p: :parallel, 
         v: :verbose,
         h: :hosts,
         s: :scenarios,
-        l: :loop
+        l: :loop,
+        t: :timeout
       ])
   end
 
@@ -25,33 +27,56 @@ defmodule Shaker do
     end
   end
 
-  def invoke_scenarios(scenarios, users \\ 5, loops \\ 5) do
-    compiled_scenarios = scenarios |> Enum.map(
-      fn (scenario) ->
+  @doc """
+  invoke testcases.
+  """
+  def invoke_scenarios(scenarios, users \\ 1, loops \\ 1, case_timeout \\ 10000) do
+    compiled_scenarios = scenarios 
+    |> Enum.map(
+      fn (scenario) -> 
         {{:module, loadModule, _, _}, _} = Code.eval_file(scenario)
         loadModule
       end)
 
-    # invoke tests per (scenario * user * loops)
-    executors = Stream.map(1..loops, fn i ->
-      stream = compiled_scenarios |> Task.async_stream(fn scenario ->
+    start_time = :os.system_time(:millisecond)
+
+    # invoke tests (scenario * loops * user)
+    # scenario1  -- iteration 1 -- user 1
+    #            |              |- user 2 
+    #            |              |- user 3
+    #            |              |_ user 4
+    #            |- iteration 2
+    #            |_ iteration 3
+    # scenario2  -- iteration 1 -- user 1
+    #            |              |- user 2 
+    #            |              |- user 3
+    #            |              |_ user 4
+    #            |- iteration 2
+    #            |_ iteration 3
+    scenario_executors = Task.async_stream(compiled_scenarios, fn scenario -> 
+      iterations = 1..loops |> Stream.map(fn iteration_count -> 
         tasks = 1..users |> Enum.map(fn x -> 
           Task.Supervisor.async({Shaker.Supervisor, Node.self}, fn -> 
-            # insert some hooks
-            scenario.case() 
-            # insert some hooks
+            IO.puts("[#{:os.system_time(:millisecond) - start_time}] running #{scenario.name()}, iteration #{iteration_count}, user = #{x}...")
+            # invoke scenarios
+            result = scenario.run()
           end)
         end)
-
-        Task.yield_many(tasks, 10000)
+        results = Task.yield_many(tasks, case_timeout)
+        results |> Enum.map(fn x -> {_, {:ok, res}} = x; res end) |> Enum.each(fn result -> 
+          IO.puts("[#{:os.system_time(:millisecond) - start_time}] name=#{result.name}, status = #{result.status}, response_time = #{result.response_time}")
+        end)
       end)
 
-      Stream.run(stream)
-    end)
+      Stream.run(iterations)
+    end, [timeout: :infinity])
 
-    Stream.run(executors)
+    Stream.run(scenario_executors)
   end
 
+  @doc """
+  launch supervisor using by tasks
+  """
   def launch_supervisor() do
     children = [
       {Task.Supervisor, name: Shaker.Supervisor}
@@ -60,6 +85,9 @@ defmodule Shaker do
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 
+  @doc """
+  entrypoint
+  """
   def main(args) do
     {opts, word, _} = args |> parser
     
@@ -69,6 +97,6 @@ defmodule Shaker do
       exit(:shutdown)
     end
 
-    scenarios |> load_scenarios
+    scenarios |> invoke_scenarios(opts[:parallel], opts[:loop], opts[:timeout])
   end
 end

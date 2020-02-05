@@ -1,12 +1,14 @@
 defmodule Shaker.Result do
-  defstruct pid: 0, response_time: 0, status: 0, case_result: ""
+  defstruct pid: 0, response_time: 0, status: 0, case_result: "", name: ""
 end
 
 defmodule Shaker.Scenario do
 
   defmacro __using__(_opts) do
     quote do
-      def hello(name), do: "Hi, #{name}"
+      def name() do
+        __MODULE__
+      end
 
       def run() do
         start_timestamp = :os.system_time(:millisecond)
@@ -14,6 +16,7 @@ defmodule Shaker.Scenario do
         end_timestamp = :os.system_time(:millisecond)
 
         %Shaker.Result{
+          name: name(),
           pid: System.get_pid,
           response_time: end_timestamp - start_timestamp,
           case_result: result
