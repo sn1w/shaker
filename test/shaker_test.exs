@@ -2,53 +2,36 @@ defmodule ShakerTest do
   use ExUnit.Case
   doctest Shaker
 
-  test "cli entrypoint test" do
-    arg = ["-p", "200", "-v", "-s", "scenarios/*"]
-    result = Shaker.parser(arg)
-    options = elem(result, 0)
-    assert options[:parallel] == 200
-    assert options[:verbose] == true
-    assert options[:scenarios] == "scenarios/*"
-  end
-
-  test "cli entrypoint test2" do
-    arg = ["-p", "51"]
-    result = Shaker.parser(arg)
-    options = elem(result, 0)
-    assert options[:parallel] == 51
-    assert options[:verbose] == nil
-  end
-
-  test "cli entrypoint invalid format" do
-    arg = ["-p", "something"]
-    result = Shaker.parser(arg)
-    options = elem(result, 0)
-    assert options[:parallel] == nil
-    assert options[:verbose] == nil
-  end
-
   test "loading glob path tests" do
-    files = Shaker.load_scenarios("scenarios/*.exs")
+    files = Shaker.extract_scenario_locations("scenarios/*.exs")
     assert length(files) == 2
     assert ["scenarios/http_sample.exs", "scenarios/websocket_sample.exs"] == files
   end
 
   test "loading scenario tests" do
-    Shaker.launch_supervisor
-    Shaker.load_scenarios("scenarios/*.exs") |> Shaker.invoke_scenarios
+    contents = Shaker.extract_scenario_locations("test_scenarios/*.exs") |> Shaker.read_scenarios
+    assert length(contents) == 1
   end
 
-  # test "websocket testing" do
-  #   {{:module, loadModule, _, _}, _} = Code.eval_file("scenarios/websocket_sample.exs")
-  #   result = loadModule.run()
-  #   IO.inspect(result)
-  #   assert result.case_result == "Hello"
-  # end
+  test "compile scenario tests" do
+    results = Shaker.extract_scenario_locations("test_scenarios/*.exs") 
+              |> Shaker.read_scenarios
+              |> Shaker.compile_scenarios
+    assert length(results) == 1
+  end
 
-  # test "https testing" do
-  #   {{:module, loadModule, _, _}, _} = Code.eval_file("scenarios/http_sample.exs")
-  #   result = loadModule.run()
-  #   IO.inspect(result)
-  #   assert result.case_result == "Hello"
-  # end
+  test "deploy scenario tests" do
+    Shaker.launch_supervisor()
+    compiled = Shaker.extract_scenario_locations("scenarios/*.exs") 
+              |> Shaker.read_scenarios
+              |> Shaker.compile_scenarios
+    results = compiled |> Enum.map(fn x -> x |> Shaker.deploy_modules([Node.self]) end)
+    assert length(results) == 2
+  end
+
+  test "invoke scenario tests" do
+    Shaker.launch_supervisor()
+    locations = Shaker.extract_scenario_locations("test_scenarios/*.exs") 
+    Shaker.invoke_scenarios(locations, [Node.self]) 
+  end
 end
