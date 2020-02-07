@@ -3,35 +3,36 @@ defmodule ShakerTest do
   doctest Shaker
 
   test "loading glob path tests" do
-    files = Shaker.extract_scenario_locations("scenarios/*.exs")
+    files = Shaker.IO.extract("scenarios/*.exs")
     assert length(files) == 2
     assert ["scenarios/http_sample.exs", "scenarios/websocket_sample.exs"] == files
   end
 
   test "loading scenario tests" do
-    contents = Shaker.extract_scenario_locations("test_scenarios/*.exs") |> Shaker.read_scenarios
-    assert length(contents) == 1
+    contents = Shaker.IO.extract("test_scenarios/*.exs") |> Shaker.IO.read_contents
+    assert length(contents) == 2
   end
 
   test "compile scenario tests" do
-    results = Shaker.extract_scenario_locations("test_scenarios/*.exs") 
-              |> Shaker.read_scenarios
-              |> Shaker.compile_scenarios
-    assert length(results) == 1
+    results = Shaker.IO.extract("test_scenarios/*.exs") 
+              |> Shaker.IO.read_contents
+              |> Shaker.Module.compile
+    assert length(results) == 2
   end
 
   test "deploy scenario tests" do
     Shaker.launch_supervisor()
-    compiled = Shaker.extract_scenario_locations("scenarios/*.exs") 
-              |> Shaker.read_scenarios
-              |> Shaker.compile_scenarios
-    results = compiled |> Enum.map(fn x -> x |> Shaker.deploy_modules([Node.self]) end)
+    compiled = Shaker.IO.extract("scenarios/*.exs") 
+              |> Shaker.IO.read_contents
+              |> Shaker.Module.compile
+    results = compiled |> Enum.map(fn x -> x |> Shaker.Module.deploy([Node.self]) end)
     assert length(results) == 2
   end
 
   test "invoke scenario tests" do
     Shaker.launch_supervisor()
-    locations = Shaker.extract_scenario_locations("test_scenarios/*.exs") 
-    Shaker.invoke_scenarios(locations, [Node.self]) 
+    locations = Shaker.IO.extract("test_scenarios/*.exs")
+    compiled = locations |> Shaker.IO.read_contents |> Shaker.Module.compile
+    Shaker.Scenario.Executor.execute(compiled, [Node.self], 10, 5) 
   end
 end

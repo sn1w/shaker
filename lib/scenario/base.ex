@@ -1,5 +1,14 @@
 defmodule Shaker.Result do
-  defstruct pid: 0, response_time: 0, status: 0, case_result: "", name: "", host: ""
+  defstruct [
+    pid: 0, 
+    response_time: 0, 
+    status: 0, 
+    case_result: "", 
+    name: "", 
+    host: "",
+    # fetch by metadata
+    context: []
+  ]
 end
 
 defmodule Shaker.Scenario do
@@ -14,7 +23,7 @@ defmodule Shaker.Scenario do
         Node.self
       end
 
-      def run() do
+      def run(context) do
         start_timestamp = :os.system_time(:millisecond)
         result = case()
         end_timestamp = :os.system_time(:millisecond)
@@ -24,7 +33,8 @@ defmodule Shaker.Scenario do
           host: host(),
           pid: System.get_pid,
           response_time: end_timestamp - start_timestamp,
-          case_result: result
+          case_result: result,
+          context: context
         }
       end
     end

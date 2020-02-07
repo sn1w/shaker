@@ -6,8 +6,10 @@ defmodule Shaker.CLI.Parser do
       verbose: false,
       hosts: [Node.self],
       scenarios: "",
+      scenario_paths: [], # filled by validation
       loop: 1,
-      timeout: 10_000
+      timeout: 10_000,
+      node_name: ""
     ]
   end
 
@@ -35,9 +37,9 @@ defmodule Shaker.CLI.Parser do
           scenarios: :string,
           loop: :integer,
           timeout: :integer,
+          node: :string,
           # using slave mode
-          slave: :boolean,
-          node: :string
+          slave: :boolean
         ],
         aliases: [
           p: :parallel, 
@@ -65,7 +67,8 @@ defmodule Shaker.CLI.Parser do
         hosts: hosts,
         scenarios: result[:scenarios] |> default_val(""),
         loop: result[:loop] |> default_val(1),
-        timeout: result[:timeout] |> default_val(10_000)
+        timeout: result[:timeout] |> default_val(10_000),
+        node_name: result[:node] |> default_val("shaker@localhost")
       }
     end
   end

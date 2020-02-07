@@ -3,9 +3,9 @@ defmodule SampleHttpRequestScenario do
 
   def case do
     {:ok, conn} = Mint.HTTP.connect(:http, "httpbin.org", 443)
-    {:ok, conn, request_ref} = Mint.HTTP.request(conn, "GET", "/", [], "")
+    {:ok, conn, _} = Mint.HTTP.request(conn, "GET", "/", [], "")
     receive do message ->
-      {:ok, conn, responses} = Mint.HTTP.stream(conn, message)
+      {:ok, _, _} = Mint.HTTP.stream(conn, message)
     end    
   end
 end
