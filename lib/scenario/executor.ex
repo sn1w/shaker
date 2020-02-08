@@ -15,10 +15,27 @@ defmodule Shaker.Scenario.Executor do
     end)
   end
 
+  def write_report(report_name, agent) do
+    state = Agent.get(agent, fn state -> state end)
+    case_results = state[:result]
+    {:ok, fp} = File.open(report_name, [:write, :utf8])
+    case_results |> Enum.each(fn result -> 
+      timestamp = result.context[:start_time]
+      status = result.status
+      name = result.name
+      pid = result.pid
+      response_time = result.response_time
+      user = result.context[:user]
+      iteration = result.context[:iteration]
+      IO.binwrite(fp, "#{timestamp},#{name},#{status},#{pid},#{response_time},#{user},#{iteration}\n")
+    end)
+    File.close(fp)
+  end
+
   @moduledoc """
   provides functions related to invoke test cases.
   """
-  def execute(compiled_scenarios, hosts, users, loops) do
+  def execute(compiled_scenarios, hosts, users, loops, report_name) do
     agent = launch_agent()
     # deploy
     compiled_scenarios |> Enum.each(fn scenario -> scenario |> Shaker.Module.deploy(hosts) end)
@@ -52,10 +69,6 @@ defmodule Shaker.Scenario.Executor do
       end, [timeout: :infinity])
     
     Stream.run(scenario_stream)
-    state = Agent.get(agent, fn state -> state end)
-    case_results = state[:result]
-    case_results |> Enum.each(fn result -> 
-      IO.inspect(result)
-    end)
+    report_name |> write_report(agent)
   end
 end

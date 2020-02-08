@@ -9,7 +9,8 @@ defmodule Shaker.CLI.Parser do
       scenario_paths: [], # filled by validation
       loop: 1,
       timeout: 10_000,
-      node_name: ""
+      node_name: "",
+      report_name: "report.csv"
     ]
   end
 
@@ -38,6 +39,7 @@ defmodule Shaker.CLI.Parser do
           loop: :integer,
           timeout: :integer,
           node: :string,
+          report: :string,
           # using slave mode
           slave: :boolean
         ],
@@ -47,7 +49,8 @@ defmodule Shaker.CLI.Parser do
           h: :hosts,
           s: :scenarios,
           l: :loop,
-          t: :timeout
+          t: :timeout,
+          r: :report
         ]
       )
     
@@ -68,7 +71,8 @@ defmodule Shaker.CLI.Parser do
         scenarios: result[:scenarios] |> default_val(""),
         loop: result[:loop] |> default_val(1),
         timeout: result[:timeout] |> default_val(10_000),
-        node_name: result[:node] |> default_val("shaker@localhost")
+        node_name: result[:node] |> default_val("shaker@localhost"),
+        report_name: result[:report] |> default_val("report.csv")
       }
     end
   end

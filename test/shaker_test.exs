@@ -33,6 +33,10 @@ defmodule ShakerTest do
     Shaker.launch_supervisor()
     locations = Shaker.IO.extract("test_scenarios/*.exs")
     compiled = locations |> Shaker.IO.read_contents |> Shaker.Module.compile
-    Shaker.Scenario.Executor.execute(compiled, [Node.self], 10, 5) 
+    Shaker.Scenario.Executor.execute(compiled, [Node.self], 10, 2, "report.csv") 
+  end
+
+  test "integration test" do
+    Shaker.main(["-s", "test_scenarios/*.exs"])
   end
 end

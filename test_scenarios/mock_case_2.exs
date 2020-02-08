@@ -3,6 +3,6 @@ defmodule SampleMockCase2 do
 
   def case do
     :timer.sleep(1500)
-    "mock ok"
+    [status: 500, message: "mock ok"]
   end
 end

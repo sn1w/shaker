@@ -33,7 +33,8 @@ defmodule Shaker.Scenario do
           host: host(),
           pid: System.get_pid,
           response_time: end_timestamp - start_timestamp,
-          case_result: result,
+          status: result[:status],
+          case_result: result[:message],
           context: context
         }
       end

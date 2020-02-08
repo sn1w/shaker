@@ -18,7 +18,7 @@ defmodule Shaker do
     scenario_len = scenario_paths |> length
     case scenario_len do
       0 -> [error: "failed to load scenarios. please apply the collect path (-s, --scenarios)"]
-      _ -> %{arguments | schenario_paths: scenario_paths}
+      _ -> %{arguments | scenario_paths: scenario_paths}
     end
   end
 
@@ -46,7 +46,14 @@ defmodule Shaker do
       end
     end)
 
-    Shaker.Scenario.Executor.execute(arguments.scenario_paths, arguments.hosts, arguments.parallel, arguments.loop)
+    hosts = case arguments.hosts do
+      [] -> [Node.self]
+      something -> something
+    end
+
+    arguments.scenario_paths |> Shaker.IO.read_contents
+    |> Shaker.Module.compile
+    |> Shaker.Scenario.Executor.execute(hosts, arguments.parallel, arguments.loop, arguments.report_name)
   end
 
   def start(%Shaker.CLI.Parser.Arguments.Slave{} = arguments) do
