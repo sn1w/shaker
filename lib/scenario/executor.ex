@@ -1,16 +1,19 @@
 defmodule Shaker.Scenario.Executor do
 
   def launch_agent do
+    IO.puts("launching Executor Agent...")
     {:ok, agent} = Agent.start_link(fn -> %{result: []} end)
-    IO.inspect(agent)
+    IO.puts("Agent launched at #{inspect agent}")
     agent
   end
 
   def invoke_case(invoke_host, scenario, context) do
     Task.Supervisor.async({Shaker.Supervisor, invoke_host}, fn -> 
-      IO.puts("[#{:os.system_time(:millisecond) - context[:start_time]}] running #{scenario.name()}, iteration #{context[:iteration]}, user = #{context[:user]}...")
+      current_time = :os.system_time(:millisecond)
+      IO.puts("running #{scenario.name()}, iteration #{context[:iteration]}, user = #{context[:user]}...")
       # invoke scenarios
-      result = scenario.run(context)
+
+      result = scenario.run(context ++ [start_time: current_time])
       result
     end)
   end
@@ -19,16 +22,23 @@ defmodule Shaker.Scenario.Executor do
     state = Agent.get(agent, fn state -> state end)
     case_results = state[:result]
     {:ok, fp} = File.open(report_name, [:write, :utf8])
-    case_results |> Enum.each(fn result -> 
-      timestamp = result.context[:start_time]
-      status = result.status
-      name = result.name
-      pid = result.pid
-      response_time = result.response_time
-      user = result.context[:user]
-      iteration = result.context[:iteration]
-      IO.binwrite(fp, "#{timestamp},#{name},#{status},#{pid},#{response_time},#{user},#{iteration}\n")
-    end)
+
+    IO.binwrite(fp, "timestamp,name,host,status,pid,response_time,user,iteration,message\n")
+
+    case_results |>
+     Enum.sort(fn(x, y) -> x.case_finished < y.case_finished end)
+     |> Enum.each(fn result -> 
+          timestamp = result.case_finished
+          status = result.status
+          name = result.name
+          host = result.host
+          pid = result.pid
+          response_time = result.response_time
+          message = result.case_result
+          user = result.context[:user]
+          iteration = result.context[:iteration]
+          IO.binwrite(fp, "#{timestamp},#{name},#{host},#{status},#{pid},#{response_time},#{user},#{iteration},#{message}\n")
+        end)
     File.close(fp)
   end
 
@@ -43,18 +53,16 @@ defmodule Shaker.Scenario.Executor do
     compiled_modules = compiled_scenarios |> Enum.map(fn x -> { module, _ } = x; module end)
     scenarios = compiled_scenarios |> Enum.map(fn x -> { _, scenario } = x; scenario end)
 
-    start_time = :os.system_time(:millisecond)
-
     scenario_stream = 
       compiled_modules 
       |> Task.async_stream(fn scenario -> 
         iterations = 
           1..loops 
           |> Stream.map(fn iteration -> 
-            host = Enum.at(hosts, 0)
             tasks = 
             1..users |> Enum.map(fn user ->
-              invoke_case(host, scenario, [user: user, iteration: iteration, start_time: start_time])
+              host = Enum.at(hosts, :rand.uniform(length(hosts)) - 1)
+              invoke_case(host, scenario, [user: user, iteration: iteration])
             end)
 
             results = Task.yield_many(tasks, :infinity)
@@ -68,7 +76,14 @@ defmodule Shaker.Scenario.Executor do
           Stream.run(iterations)
       end, [timeout: :infinity])
     
+    IO.puts("start invoking #{length(compiled_scenarios)} scenarios ... ")
+
     Stream.run(scenario_stream)
+
+    IO.puts("finish")
+
+    IO.puts("write report to #{report_name} ...")
+
     report_name |> write_report(agent)
   end
 end

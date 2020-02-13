@@ -22,7 +22,7 @@ defmodule ShakerTest do
 
   test "deploy scenario tests" do
     Shaker.launch_supervisor()
-    compiled = Shaker.IO.extract("scenarios/*.exs") 
+    compiled = Shaker.IO.extract("test_scenarios/*.exs") 
               |> Shaker.IO.read_contents
               |> Shaker.Module.compile
     results = compiled |> Enum.map(fn x -> x |> Shaker.Module.deploy([Node.self]) end)
@@ -37,6 +37,6 @@ defmodule ShakerTest do
   end
 
   test "integration test" do
-    Shaker.main(["-s", "test_scenarios/*.exs"])
+    Shaker.main(["-s", "test_scenarios/*.exs", "-p", "30", "-l", "10"])
   end
 end

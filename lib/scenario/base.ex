@@ -6,18 +6,21 @@ defmodule Shaker.Result do
     case_result: "", 
     name: "", 
     host: "",
+    case_finished: 0,
     # fetch by metadata
     context: []
   ]
 end
 
-defmodule Shaker.Scenario do
+defmodule Shaker.ScenarioBehaviour do
+  @callback name() :: string :: term
 
+  @callback case() :: list 
+end
+
+defmodule Shaker.Scenario do
   defmacro __using__(_opts) do
     quote do
-      def name() do
-        __MODULE__
-      end
 
       def host() do
         Node.self
@@ -32,6 +35,7 @@ defmodule Shaker.Scenario do
           name: name(),
           host: host(),
           pid: System.get_pid,
+          case_finished: end_timestamp,
           response_time: end_timestamp - start_timestamp,
           status: result[:status],
           case_result: result[:message],
