@@ -1,6 +1,31 @@
 <template>
-  <div class="hello">
-    <h1>{{ summary }}</h1>
+  <div class="summary-view">
+    <table class="table">
+      <thead>
+        <tr>
+          <td>Label</td>
+          <td>Average</td>
+          <td>Median</td>
+          <td>Min</td>
+          <td>Max</td>
+          <td>90%</td>
+          <td>95%</td>
+          <td>Error</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="summary in summaries" v-bind:key="summary.label">
+          <td>{{summary.label}}</td>
+          <td>{{summary.average}}ms</td>
+          <td>{{summary.median}}ms</td>
+          <td>{{summary.min}}ms</td>
+          <td>{{summary.max}}ms</td>
+          <td>{{summary.ninetyPercentTile}}ms</td>
+          <td>{{summary.ninetyFivePercentTile}}ms</td>
+          <td>{{summary.errorRate}}%</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -24,7 +49,7 @@ type SummaryRecord = {
 export default class SummaryView extends Vue {
   @Prop() private source!: CsvResult
 
-  get summary () {
+  get summaries () {
     if (this.source.records.length === 0) {
       return ''
     }
@@ -86,18 +111,4 @@ export default class SummaryView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
 </style>

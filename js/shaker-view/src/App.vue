@@ -1,32 +1,33 @@
 <template>
-  <div id="app">
-    <div id="nav" class="container">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <section id="app" class="hero">
+    <div class="hero-head">
+      <shaker-nav-bar />
     </div>
-    <router-view/>
-  </div>
+    <div class="columns">
+      <div class="column is-one-quarter">
+        <side-menu />
+      </div>
+      <div class="column">
+        <router-view/>
+      </div>
+    </div>
+  </section>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script lang="ts">
+import { Component, Prop, Vue } from 'vue-property-decorator'
+import ShakerNavBar from './components/NavBar/NavBar.vue'
+import SideMenu from './components/SideMenu/SideMenu.vue'
 
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+@Component({
+  components: {
+    ShakerNavBar,
+    SideMenu
   }
+})
+export default class App extends Vue {
 }
+</script>
+
+<style lang="scss">
 </style>
