@@ -8,7 +8,8 @@ defmodule Shaker.MixProject do
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      escript: escript()
+      escript: escript(),
+      elixirc_paths: ["lib", "shared"]
     ]
   end
 
@@ -26,7 +27,9 @@ defmodule Shaker.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
         {:socket, "~> 0.3"},
         {:castore, "~> 0.1.0"},
-        {:mint, "~> 1.0"}
+        {:protobuf, "~> 0.5.3"},
+        {:google_protos, "~> 0.1"},
+        {:httpoison, "~> 1.6"}
     ]
   end
 

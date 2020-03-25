@@ -9,6 +9,9 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import SummaryView from '../components/SummaryView.vue'
 import { CsvResult } from '../model/CsvResult'
 
+import { getModule } from 'vuex-module-decorators'
+import FileModule from '../store/FileModule'
+
 @Component({
   components: {
     SummaryView
@@ -16,7 +19,9 @@ import { CsvResult } from '../model/CsvResult'
 })
 export default class Summary extends Vue {
   get parseResult () {
-    return this.$store.getters.loadedFile
+    const module = getModule(FileModule)
+    console.log(module)
+    return module.loadedFile
   }
 }
 </script>

@@ -4,8 +4,8 @@ defmodule ShakerTest do
 
   test "loading glob path tests" do
     files = Shaker.IO.extract("scenarios/*.exs")
-    assert length(files) == 2
-    assert ["scenarios/http_sample.exs", "scenarios/websocket_sample.exs"] == files
+    assert length(files) == 3
+    assert ["scenarios/http_sample.exs", "scenarios/protobuf_sample.exs", "scenarios/websocket_sample.exs"] == files
   end
 
   test "loading scenario tests" do
@@ -33,10 +33,10 @@ defmodule ShakerTest do
     Shaker.launch_supervisor()
     locations = Shaker.IO.extract("test_scenarios/*.exs")
     compiled = locations |> Shaker.IO.read_contents |> Shaker.Module.compile
-    Shaker.Scenario.Executor.execute(compiled, [Node.self], 10, 2, "report.csv") 
+    Shaker.Scenario.Executor.execute(compiled, [Node.self], 5, 2, "report.csv") 
   end
 
   test "integration test" do
-    Shaker.main(["-s", "test_scenarios/*.exs", "-p", "30", "-l", "10"])
+    Shaker.main(["-s", "test_scenarios/*.exs", "-p", "3", "-l", "3"])
   end
 end

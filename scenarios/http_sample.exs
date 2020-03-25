@@ -1,11 +1,15 @@
 defmodule SampleHttpRequestScenario do
   use Shaker.Scenario
 
+  def name do
+    "Sample HTTP"
+  end
+
   def case do
-    {:ok, conn} = Mint.HTTP.connect(:http, "httpbin.org", 443)
-    {:ok, conn, _} = Mint.HTTP.request(conn, "GET", "/", [], "")
-    receive do message ->
-      {:ok, _, _} = Mint.HTTP.stream(conn, message)
-    end    
+    headers = []
+    options = []
+    {:ok, response} = HTTPoison.get("https://httpbin.org", headers, options)
+
+    [status: 200, message: response.body]
   end
 end

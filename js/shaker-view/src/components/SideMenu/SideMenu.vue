@@ -20,3 +20,9 @@ export default class SideMenu extends Vue {
   }
 }
 </script>
+
+<style lang="scss">
+  .menu {
+    padding: 10px;
+  }
+</style>

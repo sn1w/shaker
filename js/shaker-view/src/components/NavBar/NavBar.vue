@@ -28,7 +28,8 @@
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
-import { LOAD_NEW_FILE } from '../../store/mutation'
+import { getModule } from 'vuex-module-decorators'
+import FileModule from '../../store/FileModule'
 
 @Component
 export default class ShakerNavBar extends Vue {
@@ -50,7 +51,7 @@ export default class ShakerNavBar extends Vue {
         return
       }
 
-      this.$store.dispatch(LOAD_NEW_FILE, file)
+      getModule(FileModule).parseNewFiles(file)
     }
   }
 }

@@ -26,3 +26,6 @@ shaker-*.tar
 shaker
 # default report name
 report.csv
+# shared resources
+/shared/
+/scenarios/

@@ -4,7 +4,7 @@
       <shaker-nav-bar />
     </div>
     <div class="columns">
-      <div class="column is-one-quarter">
+      <div class="column is-one-fifth">
         <side-menu />
       </div>
       <div class="column">
