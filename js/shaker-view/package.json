@@ -14,7 +14,7 @@
     "buefy": "^0.8.10",
     "chart.js": "^2.9.3",
     "core-js": "^3.6.4",
-    "mathjs": "^6.6.0",
+    "mathjs": "^7.5.1",
     "vue": "^2.6.11",
     "vue-chartjs": "^3.5.0",
     "vue-class-component": "^7.2.2",
